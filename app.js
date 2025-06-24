@@ -11,16 +11,6 @@ const flashGlobal = require('./middleware/flashGlobal');
 dotenv.config();
 connectDB();
 
-// Buat folder upload jika belum ada
-const fs = require('fs');
-const uploadDirs = [path.join(__dirname, 'public/uploads'), path.join(__dirname, 'public/uploads/pengaduan'), path.join(__dirname, 'public/uploads/dokumen')];
-
-uploadDirs.forEach((dir) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-});
-
 const app = express();
 
 // View engine setup
