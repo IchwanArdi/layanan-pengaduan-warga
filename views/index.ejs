@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/src/output.css" />
+    <title>Dashboard | Data Desa Karangpucung</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/inter-ui/3.19.3/inter.min.css" />
+    <style>
+      .sidebar-transition {
+        transition: transform 0.3s ease-in-out;
+      }
+      .fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .hover-scale {
+        transition: transform 0.2s ease-in-out;
+      }
+      .hover-scale:hover {
+        transform: scale(1.02);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-gray-50 transition-colors duration-300" id="app">
+    <!-- Flash Messages -->
+    <% if (typeof success !== 'undefined' && success && success.length > 0) { %>
+    <div id="flash-message" class="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+      <div class="flex items-center space-x-2">
+        <i data-lucide="check-circle" class="h-5 w-5"></i>
+        <span><%= success %></span>
+      </div>
+    </div>
+    <% } %> <% if (typeof error !== 'undefined' && error && error.length > 0) { %>
+    <div id="flash-message" class="fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg">
+      <div class="flex items-center space-x-2">
+        <i data-lucide="alert-circle" class="h-5 w-5"></i>
+        <span><%= error %></span>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Sidebar -->
+    <div class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform -translate-x-full lg:translate-x-0 sidebar-transition" id="sidebar">
+      <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center">
+            <i data-lucide="home" class="h-5 w-5 text-white"></i>
+          </div>
+          <div>
+            <h2 class="font-bold text-gray-800">Karangpucung</h2>
+            <p class="text-sm text-gray-600">Portal Desa</p>
+          </div>
+        </div>
+        <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+
+      <nav class="mt-6">
+        <button onclick="showTab('dashboard')" class="sidebar-item w-full flex items-center space-x-3 px-6 py-3 text-left transition-colors bg-blue-50 text-blue-600 border-r-4 border-blue-600" data-tab="dashboard">
+          <i data-lucide="home" class="h-5 w-5"></i>
+          <span class="font-medium">Dashboard</span>
+        </button>
+        <button onclick="showTab('documents')" class="sidebar-item w-full flex items-center space-x-3 px-6 py-3 text-left transition-colors text-gray-700 hover:bg-gray-50" data-tab="documents">
+          <i data-lucide="file-text" class="h-5 w-5"></i>
+          <span class="font-medium">Layanan Dokumen</span>
+        </button>
+        <button onclick="showTab('complaints')" class="sidebar-item w-full flex items-center space-x-3 px-6 py-3 text-left transition-colors text-gray-700 hover:bg-gray-50" data-tab="complaints">
+          <i data-lucide="message-square" class="h-5 w-5"></i>
+          <span class="font-medium">Pengaduan</span>
+        </button>
+        <button onclick="showTab('profile')" class="sidebar-item w-full flex items-center space-x-3 px-6 py-3 text-left transition-colors text-gray-700 hover:bg-gray-50" data-tab="profile">
+          <i data-lucide="user" class="h-5 w-5"></i>
+          <span class="font-medium">Profil</span>
+        </button>
+      </nav>
+
+      <div class="absolute bottom-6 left-6 right-6">
+        <a href="/auth/logout" class="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+          <i data-lucide="log-out" class="h-5 w-5"></i>
+          <span>Keluar</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64">
+      <!-- Header -->
+      <header class="bg-white shadow-sm border-b">
+        <div class="flex items-center justify-between px-6 py-4">
+          <div class="flex items-center space-x-4">
+            <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <i data-lucide="menu" class="h-5 w-5"></i>
+            </button>
+            <h1 class="text-xl font-semibold text-gray-800" id="pageTitle">Dashboard</h1>
+          </div>
+
+          <div class="flex items-center space-x-4">
+            <button onclick="toggleDarkMode()" class="menu-button p-2 rounded-lg bg-gray-100 text-gray-600 hover:shadow-md transition-all duration-200" id="darkModeBtn">
+              <i data-lucide="moon" class="h-5 w-5 menu-button"></i>
+            </button>
+            <div class="relative">
+              <i data-lucide="bell" class="h-5 w-5 text-gray-600"></i>
+              <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+            </div>
+            <div class="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center">
+              <i data-lucide="user" class="h-4 w-4 text-white"></i>
+            </div>
+            <span class="text-sm font-medium text-gray-700">Halo, <%= nama %>!</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="p-6">
+        <!-- Dashboard Tab -->
+        <div id="dashboard-content" class="tab-content fade-in">
+          <div class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="bg-white rounded-xl shadow-lg p-6 hover-scale">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-gray-600 text-sm">Pengajuan Dokumen</p>
+                    <p class="text-gray-800 text-2xl font-bold"><%= totalPengajuanDokumenUser %></p>
+                    <p class="text-blue-600 text-xs">Proses: <%= totalPengajuanDokumenProsesUser %> | Selesai: <%= totalPengajuanDokumenSelesaiUser %></p>
+                  </div>
+                  <i data-lucide="file-text" class="h-8 w-8 text-blue-600"></i>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-lg p-6 hover-scale">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-gray-600 text-sm">Pengaduan Aktif</p>
+                    <p class="text-gray-800 text-2xl font-bold"><%= totalPengaduanProsesUser %></p>
+                    <p class="text-green-600 text-xs">Total: <%= totalPengaduanUser %> | Selesai: <%= totalPengaduanSelesaiUser %></p>
+                  </div>
+                  <i data-lucide="message-square" class="h-8 w-8 text-green-600"></i>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-lg p-6 hover-scale">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-gray-600 text-sm">Layanan Selesai</p>
+                    <p class="text-gray-800 text-2xl font-bold"><%= totalPengaduanSelesaiUser + totalPengajuanDokumenSelesaiUser %></p>
+                    <p class="text-purple-600 text-xs">Dokumen: <%= totalPengajuanDokumenSelesaiUser %> | Pengaduan: <%= totalPengaduanSelesaiUser %></p>
+                  </div>
+                  <i data-lucide="check-circle" class="h-8 w-8 text-purple-600"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-gray-800 text-lg font-semibold mb-4">Pengajuan Dokumen Terbaru</h3>
+                <div class="space-y-3">
+                  <% if (pengajuanDokumenTerbaru && pengajuanDokumenTerbaru.length > 0) { %> <% pengajuanDokumenTerbaru.forEach(function(dokumen) { %>
+                  <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p class="text-gray-800 font-medium"><%= dokumen.jenisDokumen %></p>
+                      <p class="text-gray-600 text-sm"><%= new Date(dokumen.createdAt).toLocaleDateString('id-ID') %></p>
+                    </div>
+                    <% let statusClass = 'bg-gray-100 text-gray-600'; let statusText = dokumen.status; if (dokumen.status === 'selesai') { statusClass = 'bg-green-100 text-green-600'; statusText = 'Selesai'; } else if (dokumen.status ===
+                    'diproses') { statusClass = 'bg-blue-100 text-blue-600'; statusText = 'Proses'; } else if (dokumen.status === 'pending') { statusClass = 'bg-gray-100 text-gray-600'; statusText = 'Menunggu'; } %>
+                    <span class="px-3 py-1 rounded-full text-xs font-medium <%= statusClass %>"><%= statusText %></span>
+                  </div>
+                  <% }); %> <% } else { %>
+                  <div class="text-center py-4">
+                    <p class="text-gray-500">Belum ada pengajuan dokumen</p>
+                  </div>
+                  <% } %> <% if (pengajuanDokumenTerbaru && pengajuanDokumenTerbaru.length > 0) { %>
+                  <div class="text-center pt-2">
+                    <a href="/dokumen/riwayat" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Lihat Semua →</a>
+                  </div>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-gray-800 text-lg font-semibold mb-4">Pengaduan Terbaru</h3>
+                <div class="space-y-3">
+                  <% if (pengaduanTerbaru && pengaduanTerbaru.length > 0) { %> <% pengaduanTerbaru.forEach(function(pengaduan) { %>
+                  <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p class="text-gray-800 font-medium"><%= pengaduan.judul %></p>
+                      <p class="text-gray-600 text-sm"><%= new Date(pengaduan.createdAt).toLocaleDateString('id-ID') %></p>
+                    </div>
+                    <% let statusClass = 'bg-gray-100 text-gray-600'; let statusText = pengaduan.status; if (pengaduan.status === 'selesai') { statusClass = 'bg-green-100 text-green-600'; statusText = 'Selesai'; } else if (pengaduan.status
+                    === 'ditindaklanjuti') { statusClass = 'bg-yellow-100 text-yellow-600'; statusText = 'Ditindaklanjuti'; } else if (pengaduan.status === 'proses') { statusClass = 'bg-blue-100 text-blue-600'; statusText = 'Proses'; } else
+                    if (pengaduan.status === 'menunggu') { statusClass = 'bg-gray-100 text-gray-600'; statusText = 'Menunggu'; } %>
+                    <span class="px-3 py-1 rounded-full text-xs font-medium <%= statusClass %>"><%= statusText %></span>
+                  </div>
+                  <% }); %> <% } else { %>
+                  <div class="text-center py-4">
+                    <p class="text-gray-500">Belum ada pengaduan</p>
+                  </div>
+                  <% } %> <% if (pengaduanTerbaru && pengaduanTerbaru.length > 0) { %>
+                  <div class="text-center pt-2">
+                    <a href="/pengaduan/riwayat" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Lihat Semua →</a>
+                  </div>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documents Tab -->
+        <div id="documents-content" class="tab-content hidden">
+          <div class="max-w-2xl mx-auto">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+              <h2 class="text-gray-800 text-2xl font-bold mb-6">Pengajuan Dokumen Kependudukan</h2>
+
+              <form action="/dokumen" method="POST" id="documentForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Dokumen</label>
+                    <select name="type" class="w-full px-4 py-3 rounded-lg border bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 transition-all duration-200" required>
+                      <option value="">Pilih jenis dokumen</option>
+                      <option value="Surat Keterangan Domisili">Surat Keterangan Domisili</option>
+                      <option value="Surat Pengantar KTP">Surat Pengantar KTP</option>
+                      <option value="Surat Pengantar KK">Surat Pengantar KK</option>
+                      <option value="Surat Keterangan Usaha">Surat Keterangan Usaha</option>
+                      <option value="Surat Keterangan Tidak Mampu">Surat Keterangan Tidak Mampu</option>
+                      <option value="Surat Keterangan Kelahiran">Surat Keterangan Kelahiran</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
+                    <input
+                      type="text"
+                      name="name"
+                      class="w-full px-4 py-3 rounded-lg border bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                      placeholder="Masukkan nama lengkap"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">NIK</label>
+                    <input
+                      type="text"
+                      name="nik"
+                      class="w-full px-4 py-3 rounded-lg border bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                      placeholder="Nomor Induk Kependudukan"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">No. Telepon</label>
+                    <input type="tel" name="phone" class="w-full px-4 py-3 rounded-lg border bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 transition-all duration-200" placeholder="Nomor telepon aktif" required />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Alamat Lengkap</label>
+                  <textarea
+                    name="address"
+                    rows="3"
+                    class="w-full px-4 py-3 rounded-lg border bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 transition-all duration-200 resize-none"
+                    placeholder="Masukkan alamat lengkap"
+                    required
+                  ></textarea>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Keperluan</label>
+                  <textarea
+                    name="purpose"
+                    rows="3"
+                    class="w-full px-4 py-3 rounded-lg border bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 transition-all duration-200 resize-none"
+                    placeholder="Jelaskan keperluan pengajuan dokumen"
+                    required
+                  ></textarea>
+                </div>
+
+                <div class="p-4 bg-blue-50 border rounded-lg">
+                  <div class="flex items-start space-x-3">
+                    <i data-lucide="alert-circle" class="h-5 w-5 text-blue-600 mt-0.5"></i>
+                    <div>
+                      <p class="text-blue-800 text-sm font-medium">Keamanan Data</p>
+                      <p class="text-blue-700 text-sm">Semua data pribadi akan dienkripsi end-to-end untuk menjamin keamanan dan privasi Anda.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 hover-scale transition-all duration-200 shadow-lg">
+                  Kirim Pengajuan
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Complaints Tab -->
+        <div id="complaints-content" class="tab-content hidden">
+          <div class="max-w-2xl mx-auto">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+              <h2 class="text-gray-800 text-2xl font-bold mb-6">Sampaikan Pengaduan</h2>
+
+              <form action="/pengaduan" method="POST" id="complaintForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Judul Pengaduan</label>
+                    <input type="text" name="judul" class="w-full px-4 py-3 rounded-lg border bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 transition-all duration-200" placeholder="Judul singkat pengaduan" />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                    <select name="kategori" class="w-full px-4 py-3 rounded-lg border bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 transition-all duration-200">
+                      <option value="">Pilih kategori</option>
+                      <option value="Infrastruktur Jalan">Infrastruktur Jalan</option>
+                      <option value="Fasilitas Umum">Fasilitas Umum</option>
+                      <option value="Pelayanan Administrasi">Pelayanan Administrasi</option>
+                      <option value="Kebersihan Lingkungan">Kebersihan Lingkungan</option>
+                      <option value="Keamanan">Keamanan</option>
+                      <option value="Lainnya">Lainnya</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi Kejadian</label>
+                  <div class="relative">
+                    <i data-lucide="map-pin" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500"></i>
+                    <input
+                      type="text"
+                      name="lokasi"
+                      class="w-full pl-10 pr-4 py-3 rounded-lg border bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                      placeholder="RT/RW, Jalan, atau lokasi spesifik"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi Pengaduan</label>
+                  <textarea
+                    name="deskripsi"
+                    rows="4"
+                    class="w-full px-4 py-3 rounded-lg border bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 transition-all duration-200 resize-none"
+                    placeholder="Jelaskan detail pengaduan Anda dengan lengkap..."
+                  ></textarea>
+                </div>
+
+                <div class="p-4 bg-green-50 border rounded-lg">
+                  <div class="flex items-start space-x-3">
+                    <i data-lucide="check-circle" class="h-5 w-5 text-green-600 mt-0.5"></i>
+                    <div>
+                      <p class="text-green-800 text-sm font-medium">Jaminan Privasi</p>
+                      <p class="text-green-700 text-sm">Data pengaduan dienkripsi dan hanya diakses oleh petugas berwenang untuk penanganan.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  class="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-lg hover:from-green-700 hover:to-emerald-700 hover-scale transition-all duration-200 shadow-lg flex items-center justify-center space-x-2"
+                >
+                  <i data-lucide="send" class="h-5 w-5"></i>
+                  <span>Kirim Pengaduan</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile Tab -->
+        <div id="profile-content" class="tab-content hidden">
+          <div class="max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <!-- Profile Card -->
+              <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="text-center">
+                  <div class="w-24 h-24 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="user" class="h-12 w-12 text-white"></i>
+                  </div>
+                  <h3 class="text-gray-800 text-xl font-bold"><%= nama %></h3>
+                  <p class="text-gray-600 text-sm">Warga Desa Karangpucung</p>
+
+                  <div class="mt-4 p-3 bg-green-50 rounded-lg">
+                    <div class="flex items-center justify-center space-x-2">
+                      <i data-lucide="check-circle" class="h-4 w-4 text-green-600"></i>
+                      <span class="text-sm font-medium text-green-800">Akun Terverifikasi</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Statistics Card -->
+              <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-gray-800 text-lg font-semibold mb-4">Statistik Anda</h3>
+
+                <div class="space-y-4">
+                  <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                      <i data-lucide="file-text" class="h-5 w-5 text-blue-600"></i>
+                      <span class="text-sm font-medium text-blue-800">Total Pengajuan Dokumen</span>
+                    </div>
+                    <span class="text-blue-600 font-bold"><%= totalPengajuanDokumenUser %></span>
+                  </div>
+
+                  <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                      <i data-lucide="message-square" class="h-5 w-5 text-green-600"></i>
+                      <span class="text-sm font-medium text-green-800">Total Pengaduan</span>
+                    </div>
+                    <span class="text-green-600 font-bold"><%= totalPengaduanUser %></span>
+                  </div>
+
+                  <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                      <i data-lucide="check-circle" class="h-5 w-5 text-purple-600"></i>
+                      <span class="text-sm font-medium text-purple-800">Layanan Selesai</span>
+                    </div>
+                    <span class="text-purple-600 font-bold"><%= totalPengaduanSelesaiUser + totalPengajuanDokumenSelesaiUser %></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Account Settings -->
+              <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-gray-800 text-lg font-semibold mb-4">Pengaturan Akun</h3>
+
+                <div class="space-y-3">
+                  <a href="/pengaduan/riwayat" class="w-full flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left">
+                    <i data-lucide="message-square" class="h-5 w-5 text-gray-500"></i>
+                    <span class="text-gray-700">Riwayat Pengaduan</span>
+                  </a>
+
+                  <a href="/dokumen/riwayat" class="w-full flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left">
+                    <i data-lucide="file-text" class="h-5 w-5 text-gray-500"></i>
+                    <span class="text-gray-700">Riwayat Dokumen</span>
+                  </a>
+
+                  <button class="w-full flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left">
+                    <i data-lucide="settings" class="h-5 w-5 text-gray-500"></i>
+                    <span class="text-gray-700">Ubah Password</span>
+                  </button>
+
+                  <button class="w-full flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left">
+                    <i data-lucide="bell" class="h-5 w-5 text-gray-500"></i>
+                    <span class="text-gray-700">Notifikasi</span>
+                  </button>
+
+                  <div class="pt-3 border-t border-gray-200">
+                    <a href="/auth/logout" class="w-full flex items-center space-x-3 p-3 hover:bg-red-50 text-red-600 rounded-lg transition-colors text-left">
+                      <i data-lucide="log-out" class="h-5 w-5"></i>
+                      <span>Keluar dari Akun</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Activity History -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mt-6">
+              <h3 class="text-gray-800 text-lg font-semibold mb-4">Riwayat Aktivitas Terbaru</h3>
+
+              <div class="space-y-4">
+                <!-- Riwayat Pengaduan -->
+                <% if (pengaduanTerbaru && pengaduanTerbaru.length > 0) { %> <% pengaduanTerbaru.forEach(function(pengaduan) { %>
+                <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                  <div class="w-2 h-2 bg-<%= pengaduan.status === 'selesai' ? 'green' : pengaduan.status === 'proses' || pengaduan.status === 'ditindaklanjuti' ? 'blue' : 'gray' %>-500 rounded-full"></div>
+                  <div class="flex-1">
+                    <p class="text-gray-800 font-medium">Pengaduan: <%= pengaduan.judul %></p>
+                    <p class="text-gray-600 text-sm"><%= new Date(pengaduan.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }) %> WIB</p>
+                  </div>
+                  <span
+                    class="px-3 py-1 bg-<%= pengaduan.status === 'selesai' ? 'green' : pengaduan.status === 'proses' || pengaduan.status === 'ditindaklanjuti' ? 'yellow' : 'gray' %>-100 text-<%= pengaduan.status === 'selesai' ? 'green' : pengaduan.status === 'proses' || pengaduan.status === 'ditindaklanjuti' ? 'yellow' : 'gray' %>-800 text-xs rounded-full"
+                  >
+                    <%= pengaduan.status === 'menunggu' ? 'Menunggu' : pengaduan.status === 'proses' ? 'Proses' : pengaduan.status === 'ditindaklanjuti' ? 'Ditindaklanjuti' : 'Selesai' %>
+                  </span>
+                </div>
+                <% }); %> <% } %>
+
+                <!-- Riwayat Pengajuan Dokumen -->
+                <% if (pengajuanDokumenTerbaru && pengajuanDokumenTerbaru.length > 0) { %> <% pengajuanDokumenTerbaru.forEach(function(dokumen) { %>
+                <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                  <div class="w-2 h-2 bg-<%= dokumen.status === 'selesai' ? 'green' : dokumen.status === 'diproses' ? 'blue' : 'gray' %>-500 rounded-full"></div>
+                  <div class="flex-1">
+                    <p class="text-gray-800 font-medium">Dokumen: <%= dokumen.jenisDokumen %></p>
+                    <p class="text-gray-600 text-sm"><%= new Date(dokumen.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }) %> WIB</p>
+                  </div>
+                  <span
+                    class="px-3 py-1 bg-<%= dokumen.status === 'selesai' ? 'green' : dokumen.status === 'diproses' ? 'yellow' : 'gray' %>-100 text-<%= dokumen.status === 'selesai' ? 'green' : dokumen.status === 'diproses' ? 'yellow' : 'gray' %>-800 text-xs rounded-full"
+                  >
+                    <%= dokumen.status === 'pending' ? 'Menunggu' : dokumen.status === 'diproses' ? 'Diproses' : 'Selesai' %>
+                  </span>
+                </div>
+                <% }); %> <% } %>
+
+                <!-- Jika tidak ada aktivitas -->
+                <% if ((!pengaduanTerbaru || pengaduanTerbaru.length === 0) && (!pengajuanDokumenTerbaru || pengajuanDokumenTerbaru.length === 0)) { %>
+                <div class="text-center py-8">
+                  <i data-lucide="inbox" class="h-12 w-12 text-gray-400 mx-auto mb-4"></i>
+                  <p class="text-gray-500">Belum ada aktivitas terbaru</p>
+                  <p class="text-gray-400 text-sm">Riwayat pengaduan dan pengajuan dokumen akan muncul di sini</p>
+                </div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Success/Error Flash Messages -->
+    <% if (typeof success !== 'undefined' && success.length > 0) { %>
+    <div id="successAlert" class="fixed top-4 right-4 z-50 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg max-w-md">
+      <div class="flex items-center">
+        <i data-lucide="check-circle" class="h-5 w-5 mr-2"></i>
+        <span><%= success %></span>
+        <button onclick="closeAlert('successAlert')" class="ml-4 text-green-700 hover:text-green-900">
+          <i data-lucide="x" class="h-4 w-4"></i>
+        </button>
+      </div>
+    </div>
+    <% } %> <% if (typeof error !== 'undefined' && error.length > 0) { %>
+    <div id="errorAlert" class="fixed top-4 right-4 z-50 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg max-w-md">
+      <div class="flex items-center">
+        <i data-lucide="alert-circle" class="h-5 w-5 mr-2"></i>
+        <span><%= error %></span>
+        <button onclick="closeAlert('errorAlert')" class="ml-4 text-red-700 hover:text-red-900">
+          <i data-lucide="x" class="h-4 w-4"></i>
+        </button>
+      </div>
+    </div>
+    <% } %> <% if (typeof info !== 'undefined' && info.length > 0) { %>
+    <div id="infoAlert" class="fixed top-4 right-4 z-50 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded shadow-lg max-w-md">
+      <div class="flex items-center">
+        <i data-lucide="info" class="h-5 w-5 mr-2"></i>
+        <span><%= info %></span>
+        <button onclick="closeAlert('infoAlert')" class="ml-4 text-blue-700 hover:text-blue-900">
+          <i data-lucide="x" class="h-4 w-4"></i>
+        </button>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="/public/script.js"></script>
+  </body>
+</html>

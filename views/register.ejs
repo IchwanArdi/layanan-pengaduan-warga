@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/src/output.css" />
+    <link rel="icon" type="image/png" href="/icon/logo.png" />
+    <title>Form Registrasi Warga | Data Desa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/inter-ui/3.19.3/inter.min.css" />
+  </head>
+  <body class="min-h-screen flex items-center justify-center p-4 bg-gray-900 text-white">
+    <div class="w-full max-w-xl rounded-2xl shadow-2xl p-8 bg-gray-800">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">📝</div>
+        <h1 class="text-2xl font-bold text-white mb-2">Form Registrasi Warga</h1>
+        <p class="text-gray-300">Lengkapi data diri Anda dengan benar</p>
+      </div>
+
+      <!-- Validation Errors -->
+      <% if (typeof errors !== 'undefined' && errors.length > 0) { %> <% errors.forEach(function(error) { %>
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-2"><%= error.msg %></div>
+      <% }) %> <% } %>
+
+      <!-- Form Registrasi -->
+      <form action="/auth/register" method="POST" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Nama Lengkap</label>
+          <input
+            type="text"
+            name="nama"
+            required
+            placeholder="Masukkan nama lengkap"
+            class="w-full px-4 py-3 rounded-lg border bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+            value="<%= typeof nama !== 'undefined' ? nama : '' %>"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Email</label>
+          <input
+            type="email"
+            name="email"
+            required
+            placeholder="Masukkan email aktif"
+            class="w-full px-4 py-3 rounded-lg border bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+            value="<%= typeof email !== 'undefined' ? email : '' %>"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Nomor HP</label>
+          <input
+            type="tel"
+            name="no_hp"
+            required
+            placeholder="08xxxxxxxxxx"
+            class="w-full px-4 py-3 rounded-lg border bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+            value="<%= typeof no_hp !== 'undefined' ? no_hp : '' %>"
+          />
+        </div>
+
+        <div class="flex gap-4">
+          <div class="w-1/2">
+            <label class="block text-sm font-medium mb-1">RT</label>
+            <input
+              type="number"
+              name="rt"
+              required
+              placeholder="01"
+              class="w-full px-4 py-3 rounded-lg border bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+              value="<%= typeof rt !== 'undefined' ? rt : '' %>"
+            />
+          </div>
+          <div class="w-1/2">
+            <label class="block text-sm font-medium mb-1">RW</label>
+            <input
+              type="number"
+              name="rw"
+              required
+              placeholder="02"
+              class="w-full px-4 py-3 rounded-lg border bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+              value="<%= typeof rw !== 'undefined' ? rw : '' %>"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Jalan</label>
+          <input
+            type="text"
+            name="jalan"
+            required
+            placeholder="Contoh: Jl. Melati No.5"
+            class="w-full px-4 py-3 rounded-lg border bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+            value="<%= typeof jalan !== 'undefined' ? jalan : '' %>"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">NIK</label>
+          <input type="text" name="nik" required placeholder="Masukkan NIK 16 digit" class="w-full px-4 py-3 rounded-lg border bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Password</label>
+          <input type="password" name="password" required placeholder="Buat password aman" class="w-full px-4 py-3 rounded-lg border bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg">
+          Daftar Sekarang
+        </button>
+
+        <div class="text-center text-sm mt-4 text-gray-400">
+          <p>
+            Sudah punya akun?
+            <a href="/auth/login" class="text-blue-400 hover:underline">Masuk di sini</a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
