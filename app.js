@@ -3,7 +3,6 @@ const express = require('express');
 const dotenv = require('dotenv');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-
 const connectDB = require('./config/db');
 const flash = require('connect-flash');
 const flashGlobal = require('./middleware/flashGlobal');
@@ -45,6 +44,7 @@ app.use(flashGlobal);
 
 // Routing ke berbagai bagian aplikasi
 app.use('/', require('./routes/index'));
+app.use('/auth', require('./routes/auth'));
 app.use('/auth', require('./routes/auth'));
 
 module.exports = app;

@@ -50,7 +50,10 @@ function showTab(tabName) {
 
   // Close sidebar on mobile after selection
   if (window.innerWidth < 1024) {
-    toggleSidebar();
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar.classList.contains('-translate-x-full')) {
+      toggleSidebar();
+    }
   }
 }
 
@@ -58,87 +61,97 @@ function showTab(tabName) {
 function toggleDarkMode() {
   document.body.classList.toggle('dark');
   const darkModeBtn = document.getElementById('darkModeBtn');
-  const icon = darkModeBtn.querySelector('i');
-
-  if (document.body.classList.contains('dark')) {
-    icon.setAttribute('data-lucide', 'sun');
-  } else {
-    icon.setAttribute('data-lucide', 'moon');
+  if (darkModeBtn) {
+    const icon = darkModeBtn.querySelector('i');
+    if (icon) {
+      if (document.body.classList.contains('dark')) {
+        icon.setAttribute('data-lucide', 'sun');
+      } else {
+        icon.setAttribute('data-lucide', 'moon');
+      }
+    }
   }
-
   lucide.createIcons();
 }
 
 // Form submissions
-document.getElementById('documentForm').addEventListener('submit', function (e) {
-  e.preventDefault();
+document.addEventListener('DOMContentLoaded', function () {
+  const documentForm = document.getElementById('documentForm');
+  if (documentForm) {
+    documentForm.addEventListener('submit', function (e) {
+      e.preventDefault();
 
-  const formData = new FormData(this);
-  const data = Object.fromEntries(formData);
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData);
 
-  // Validate required fields
-  if (!data.type || !data.name || !data.nik || !data.phone || !data.address || !data.purpose) {
-    alert('Semua field wajib diisi!');
-    return;
+      // Validate required fields
+      if (!data.type || !data.name || !data.nik || !data.phone || !data.address || !data.purpose) {
+        alert('Semua field wajib diisi!');
+        return;
+      }
+
+      // Submit form
+      fetch('/dokumen', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams(data),
+      })
+        .then((response) => {
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            throw new Error('Terjadi kesalahan saat mengirim data');
+          }
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          alert('Terjadi kesalahan saat mengirim pengajuan dokumen');
+        });
+    });
   }
 
-  // Submit form
-  fetch('/dokumen', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams(data),
-  })
-    .then((response) => {
-      if (response.ok) {
-        window.location.reload();
-      } else {
-        throw new Error('Terjadi kesalahan saat mengirim data');
+  const complaintForm = document.getElementById('complaintForm');
+  if (complaintForm) {
+    complaintForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+      const data = {
+        judul: formData.get('judul'),
+        kategori: formData.get('kategori'),
+        lokasi: formData.get('lokasi'),
+        deskripsi: formData.get('deskripsi'),
+      };
+
+      // Validate required fields
+      if (!data.judul || !data.kategori || !data.lokasi || !data.deskripsi) {
+        alert('Semua field wajib diisi!');
+        return;
       }
-    })
-    .catch((error) => {
-      console.error('Error:', error);
-      alert('Terjadi kesalahan saat mengirim pengajuan dokumen');
+
+      // Submit form
+      fetch('/pengaduan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams(data),
+      })
+        .then((response) => {
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            throw new Error('Terjadi kesalahan saat mengirim data');
+          }
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          alert('Terjadi kesalahan saat mengirim pengaduan');
+        });
     });
-});
-
-document.getElementById('complaintForm').addEventListener('submit', function (e) {
-  e.preventDefault();
-
-  const formData = new FormData(this);
-  const data = {
-    judul: formData.get('judul'),
-    kategori: formData.get('kategori'),
-    lokasi: formData.get('lokasi'),
-    deskripsi: formData.get('deskripsi'),
-  };
-
-  // Validate required fields
-  if (!data.judul || !data.kategori || !data.lokasi || !data.deskripsi) {
-    alert('Semua field wajib diisi!');
-    return;
   }
-
-  // Submit form
-  fetch('/pengaduan', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams(data),
-  })
-    .then((response) => {
-      if (response.ok) {
-        window.location.reload();
-      } else {
-        throw new Error('Terjadi kesalahan saat mengirim data');
-      }
-    })
-    .catch((error) => {
-      console.error('Error:', error);
-      alert('Terjadi kesalahan saat mengirim pengaduan');
-    });
 });
 
 // Close alert function
@@ -159,13 +172,42 @@ setTimeout(function () {
   });
 }, 5000);
 
-// Close sidebar when clicking outside on mobile
+// Improved sidebar click outside handler
 document.addEventListener('click', function (e) {
-  const sidebar = document.getElementById('sidebar');
-  const sidebarToggle = document.querySelector('[onclick="toggleSidebar()"]');
+  // Check if we're on mobile
+  if (window.innerWidth >= 1024) return;
 
-  if (window.innerWidth < 1024 && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target) && !sidebar.classList.contains('-translate-x-full')) {
+  const sidebar = document.getElementById('sidebar');
+  if (!sidebar) return;
+
+  // Get all toggle buttons
+  const toggleButtons = document.querySelectorAll('[onclick="toggleSidebar()"]');
+
+  // Check if click is on any toggle button
+  let clickedToggle = false;
+  toggleButtons.forEach((button) => {
+    if (button.contains(e.target) || button === e.target) {
+      clickedToggle = true;
+    }
+  });
+
+  // If clicked outside sidebar and not on toggle button, and sidebar is open
+  if (!sidebar.contains(e.target) && !clickedToggle && !sidebar.classList.contains('-translate-x-full')) {
     toggleSidebar();
+  }
+});
+
+// Handle resize events
+window.addEventListener('resize', function () {
+  const sidebar = document.getElementById('sidebar');
+  if (window.innerWidth >= 1024) {
+    // On desktop, ensure sidebar is visible
+    sidebar.classList.remove('-translate-x-full');
+  } else {
+    // On mobile, ensure sidebar is hidden initially
+    if (!sidebar.classList.contains('-translate-x-full')) {
+      sidebar.classList.add('-translate-x-full');
+    }
   }
 });
 
@@ -173,4 +215,10 @@ document.addEventListener('click', function (e) {
 document.addEventListener('DOMContentLoaded', function () {
   lucide.createIcons();
   showTab('dashboard'); // Show dashboard by default
+
+  // Ensure proper initial state for sidebar on mobile
+  const sidebar = document.getElementById('sidebar');
+  if (window.innerWidth < 1024) {
+    sidebar.classList.add('-translate-x-full');
+  }
 });
